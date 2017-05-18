@@ -37,7 +37,7 @@ public class Client implements Runnable{
 	// Variables
 	//===================================
 	ClientView view;
-	IncomingTrafficListener controller;
+	ClientReceiver controller;
 	BufferedReader reader;
 	
 	DiffieHellman diffieAlice;
@@ -93,7 +93,17 @@ public class Client implements Runnable{
 	// Methods
 	//===================================
 	/**
-	 * 
+	 * Wrapper for sending encrypted messages
+	 * @param message
+	 * @throws IOException
+	 */
+	public void send(Message message) throws IOException {
+		LOGGER.log(Level.INFO, "Sending ciphertext ...");
+		SocketUtil.send(message, outSecure);
+	}
+	
+	/**
+	 * Connects to the specified server
 	 * @param host
 	 * @param port
 	 * @return
@@ -159,17 +169,12 @@ public class Client implements Runnable{
 		}
 	}
 	
-	public void send(Message message) throws IOException {
-		LOGGER.log(Level.INFO, "Sending ciphertext ...");
-		SocketUtil.send(message, outSecure);
-	}
-	
 	@Override
 	public void run() {
 		
 		this.view = new ClientView(outSecure, aliceDesKey );
 		
-		this.controller = new IncomingTrafficListener(this, view);
+		this.controller = new ClientReceiver(this, view);
 
 		view.show();
 		controller.run();

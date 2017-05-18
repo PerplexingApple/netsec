@@ -182,8 +182,8 @@ public class DiffieHellman {
 
 	/**
 	 * Generating alicePubKeyEnc for sending to Bob
-	 * @param mode
-	 * @return
+	 * @param mode specifies whether or not to use default parameters
+	 * @return alicePubKeyEnc
 	 * @throws Exception
 	 */
 	public byte[] initializeAlice(String mode) throws Exception {
@@ -207,7 +207,7 @@ public class DiffieHellman {
 	 * Generating bobPubKeyEnc for sending to Alice.
 	 * Bob instantiates a DH public key from the encoded key material(Alice's public key in encoded format).
 	 * @param alicePubKeyEnc
-	 * @return
+	 * @return bobPubKeyEnc
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
 	 * @throws InvalidAlgorithmParameterException

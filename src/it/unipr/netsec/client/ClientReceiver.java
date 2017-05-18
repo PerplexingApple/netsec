@@ -14,8 +14,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-public class IncomingTrafficListener implements Runnable {
-	private static final Logger LOGGER = Logger.getLogger( IncomingTrafficListener.class.getName() );
+public class ClientReceiver implements Runnable {
+	private static final Logger LOGGER = Logger.getLogger( ClientReceiver.class.getName() );
 	
 	ClientView view;
 	Client client;
@@ -23,7 +23,7 @@ public class IncomingTrafficListener implements Runnable {
 	//===================================
 	// Constructor
 	//===================================
-	public IncomingTrafficListener(Client client, ClientView view) {
+	public ClientReceiver(Client client, ClientView view) {
 		super();
 		
 		LOGGER.log(Level.INFO, "Starting up ViewController... ");
