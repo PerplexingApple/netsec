@@ -17,7 +17,7 @@ public class Message implements Serializable{
 	//===================================
 	/**
 	 * Saves a string as a byte array
-	 * @param text is a String of plaintext
+	 * @param text is a String of text
 	 */
 	public Message(String text) {		
 		plaintextToBytes( text );			
@@ -30,18 +30,6 @@ public class Message implements Serializable{
 		this.text = text;			
 	}
 	
-	//===================================
-	// Methods
-	//===================================
-	/**
-	 * Constructs a readable Java String for immediate use
-	 * @return in String format
-	 */
-	public String readableString(){
-		String string = new String(text, StandardCharsets.UTF_8);
-		return string;
-	}
-
 	
 	//===================================
 	// Getters and setters

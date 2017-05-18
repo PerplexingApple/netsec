@@ -2,8 +2,11 @@ package it.unipr.netsec.util;
 
 public class ByteFunc {
 
-	//example
 	private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	
+	private ByteFunc() {
+	    throw new IllegalAccessError("Utility class");
+	  }
 	
 	public static String bytesToHexString(byte[] bytes) {
 	    char[] hexChars = new char[bytes.length * 2];

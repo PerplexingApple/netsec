@@ -11,14 +11,14 @@ public class Server implements Runnable{
 	private static final int SECURE_PORT_NUMBER = 1060;
 	private static final Logger LOGGER = Logger.getLogger( Server.class.getName() );
 	
-	private static ServerThread clients[] = new ServerThread[50];
+	private static  ServerThread[] clients = new ServerThread[50];
 	private static int clientCount = 0;
 
 	private Server() {
 
 	}
 
-	private void addThread(Socket socket){  
+	private synchronized void addThread(Socket socket){  
 		if (clientCount < clients.length){  
 			System.out.println("Client accepted: " + socket);
 			clients[clientCount] = new ServerThread(socket, this); 

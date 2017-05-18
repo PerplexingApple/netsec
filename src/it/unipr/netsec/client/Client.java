@@ -58,7 +58,7 @@ public class Client implements Runnable{
 
 		this.secureSocket = connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
 
-		this.aliceDesKey = DesCrypt.desKey(diffieAlice.getAliceKeyAgree(), diffieAlice.getBobPubKey());
+		this.aliceDesKey = DesCrypt.createDesKey(diffieAlice.getAliceKeyAgree(), diffieAlice.getBobPubKey());
 
 		this.outSecure = createOut(secureSocket);
 
@@ -176,7 +176,7 @@ public class Client implements Runnable{
 				Message cipherMessage = new Message( DesCrypt.encrypt( newTextInput, aliceDesKey) );
 				LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
 				
-				if (new String(newTextInput).equalsIgnoreCase("QUIT")) {
+				if ("QUIT".equalsIgnoreCase(new String(newTextInput)) ) {
 					LOGGER.log(Level.INFO, "Closing connection with Client ...");
 					
 					SocketUtil.send(cipherMessage, outSecure);	
@@ -188,19 +188,9 @@ public class Client implements Runnable{
 					SocketUtil.send(cipherMessage, outSecure);
 
 				}
-			} catch (IOException e) {
+			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e.toString() );
 				return;
-			} catch (InvalidKeyException e) {
-				LOGGER.log(Level.SEVERE, e.toString() );
-			} catch (IllegalBlockSizeException e) {
-				LOGGER.log(Level.SEVERE, e.toString() );
-			} catch (BadPaddingException e) {
-				LOGGER.log(Level.SEVERE, e.toString() );
-			} catch (NoSuchAlgorithmException e) {
-				LOGGER.log(Level.SEVERE, e.toString() );
-			} catch (NoSuchPaddingException e) {
-				LOGGER.log(Level.SEVERE, e.toString() );;
 			}
 		}
 		//==============================================================

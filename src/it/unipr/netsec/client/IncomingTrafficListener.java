@@ -50,11 +50,11 @@ public class IncomingTrafficListener implements Runnable {
 				LOGGER.log(Level.INFO, "View is writing a message... ");
 				view.updateText(new String(recovered) );				
 				
-				if(new String(recovered)=="QUIT"){
+				if( "QUIT".equals(new String(recovered)) ){
 					client.close();
+					return;
 				}
-			} catch (ClassNotFoundException	| IOException | InvalidKeyException | IllegalBlockSizeException |
-					BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e.toString());
 			}
 		}

@@ -1,9 +1,6 @@
 package it.unipr.netsec.crypto;
 
-import it.unipr.netsec.server.ServerThread;
 import it.unipr.netsec.server.SocketUtil;
-import it.unipr.netsec.util.ByteFunc;
-import it.unipr.netsec.util.ByteFunc;
 import it.unipr.netsec.util.Message;
 
 import java.io.BufferedInputStream;
@@ -20,22 +17,15 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
-import javax.crypto.SecretKey;
-import javax.crypto.ShortBufferException;
-import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.DHPrivateKeySpec;
-import javax.crypto.spec.DHPublicKeySpec;
 
 public class DiffieHellman {
 
@@ -45,7 +35,7 @@ public class DiffieHellman {
 	private static final Logger LOGGER = Logger.getLogger( DiffieHellman.class.getName() );
 
 	// The 1024 bit Diffie-Hellman modulus values used by SKIP
-	private static final byte skip1024ModulusBytes[] = {
+	private static final byte[] skip1024ModulusBytes = {
 		(byte)0xF4, (byte)0x88, (byte)0xFD, (byte)0x58,
 		(byte)0x4E, (byte)0x49, (byte)0xDB, (byte)0xCD,
 		(byte)0x20, (byte)0xB4, (byte)0x9D, (byte)0xE4,
@@ -86,12 +76,6 @@ public class DiffieHellman {
 	// The base used with the SKIP 1024 bit modulus
 	private static final BigInteger skip1024Base = BigInteger.valueOf(2);
 
-	//==================================================================
-	//Constructor
-	//==================================================================
-	public DiffieHellman(){
-
-	}
 	//==================================================================
 	//Variables
 	//==================================================================
@@ -144,10 +128,10 @@ public class DiffieHellman {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidParameterSpecException
 	 */
-	public static DHParameterSpec generateDhParamenters(String mode) throws NoSuchAlgorithmException, InvalidParameterSpecException {
+	public static DHParameterSpec generateDhParamenters(String mode) throws Exception{
 		DHParameterSpec dhSkipParamSpec;
 
-		if (mode.equals("GENERATE_DH_PARAMS")) {
+		if ("GENERATE_DH_PARAMS".equals(mode)) {
 			// Create new DH parameters
 			LOGGER.log(Level.INFO, "Creating Diffie-Hellman parameters (takes VERY long) ...");
 
@@ -155,7 +139,7 @@ public class DiffieHellman {
 			paramGen.init(512);
 
 			AlgorithmParameters param = paramGen.generateParameters();
-			dhSkipParamSpec = (DHParameterSpec)param.getParameterSpec(DHParameterSpec.class);
+			dhSkipParamSpec = param.getParameterSpec(DHParameterSpec.class);
 		} 
 		else {
 			// use pre-generated, default DH parameters
@@ -172,7 +156,7 @@ public class DiffieHellman {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidAlgorithmParameterException
 	 */
-	public static KeyPair generateDhKeyPair(DHParameterSpec dhSkipParamSpec) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+	public static KeyPair generateDhKeyPair(DHParameterSpec dhSkipParamSpec) throws Exception {
 		LOGGER.log(Level.INFO, "ALICE: Generating DH keypair ...");
 		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("DH");
 		keyPairGen.initialize(dhSkipParamSpec);
@@ -188,7 +172,7 @@ public class DiffieHellman {
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 */
-	public static KeyAgreement computeDhSecret(KeyPair keyPair) throws InvalidKeyException, NoSuchAlgorithmException {
+	public static KeyAgreement computeDhSecret(KeyPair keyPair) throws Exception {
 		KeyAgreement keyAgree = KeyAgreement.getInstance("DH");
 		keyAgree.init(keyPair.getPrivate());
 		LOGGER.log(Level.INFO, "KeyAgreement initialized");
@@ -229,12 +213,12 @@ public class DiffieHellman {
 	 * @throws InvalidAlgorithmParameterException
 	 * @throws InvalidKeyException
 	 */
-	public byte[] initilizeBobFromAlice(byte[] alicePubKeyEnc) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidAlgorithmParameterException, InvalidKeyException{
+	public byte[] initilizeBobFromAlice(byte[] alicePubKeyEnc) throws Exception{
 
 		KeyFactory bobKeyFac = KeyFactory.getInstance("DH");
 		LOGGER.log(Level.INFO, "BOB: generating x509 key ...");
 		this.x509KeySpec = new X509EncodedKeySpec(alicePubKeyEnc);
-		LOGGER.log(Level.INFO, "BOB: generated x509: " + this.x509KeySpec);
+
 		LOGGER.log(Level.INFO, "BOB: generating alicePubKey ...");
 		this.alicePubKey = bobKeyFac.generatePublic(x509KeySpec);
 
@@ -250,7 +234,7 @@ public class DiffieHellman {
 		this.bobKeyAgree = KeyAgreement.getInstance("DH");
 		this.bobKeyAgree.init(bobKpair.getPrivate());
 
-		// Bob encodes his public key, for sending over to Alice.
+		// Bob encodes his public key for sending over to Alice.
 		byte[] bobPubKeyEnc = bobKpair.getPublic().getEncoded();
 		LOGGER.log(Level.INFO, "BobPubKey is ready for sending ...");
 		return bobPubKeyEnc;		
@@ -259,19 +243,19 @@ public class DiffieHellman {
 	/**
 	 * Uses bobPubKeyEnc to save a bobPubKey for future use
 	 * Instantiates a DH public key from Bob's encoded key material.
-	 * Sets last phase flag to true
+	 * Sets last phase flag to true because only 2 entities are exchanging
 	 * @param bobPubKeyEnc
 	 * @throws InvalidKeySpecException
 	 * @throws InvalidKeyException
 	 * @throws IllegalStateException
 	 * @throws NoSuchAlgorithmException
 	 */
-	public void lastPhaseAlice(byte[] bobPubKeyEnc) throws InvalidKeySpecException, InvalidKeyException, IllegalStateException, NoSuchAlgorithmException{
+	public void lastPhaseAlice(byte[] bobPubKeyEnc) throws Exception{
 
 		KeyFactory aliceKeyFac = KeyFactory.getInstance("DH");
 		this.x509KeySpec = new X509EncodedKeySpec(bobPubKeyEnc);
 		this.bobPubKey = aliceKeyFac.generatePublic(x509KeySpec);
-		LOGGER.log(Level.INFO, "ALICE: Execute PHASE1 ...");
+		LOGGER.log(Level.INFO, "ALICE: Execute PHASE last ...");
 		this.aliceKeyAgree.doPhase(bobPubKey, true);
 	}
 
@@ -282,9 +266,9 @@ public class DiffieHellman {
 	 * @throws InvalidKeyException
 	 * @throws IllegalStateException
 	 */
-	public void lastPhaseBob(PublicKey alicePubKey) throws InvalidKeyException, IllegalStateException{
+	public void lastPhaseBob(PublicKey alicePubKey) throws Exception{
 		
-		LOGGER.log(Level.INFO, "BOB: Execute PHASE1 ...");
+		LOGGER.log(Level.INFO, "BOB: Execute PHASE last ...");
 		this.bobKeyAgree.doPhase(alicePubKey, true);
 	}
 

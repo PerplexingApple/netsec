@@ -69,8 +69,7 @@ public class ServerThread extends Thread{
 			Message messageToBeSent = new Message(DesCrypt.encrypt( textToBeSentSecurely, bobDesKey) );
 			SocketUtil.send( messageToBeSent, outSecure);
 			
-		} catch (IOException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException |
-				NoSuchAlgorithmException | NoSuchPaddingException e) {
+		} catch (Exception  e) {
 			LOGGER.log(Level.SEVERE, e.toString() );
 		}
 	}
@@ -103,6 +102,7 @@ public class ServerThread extends Thread{
 		}
 	}
 
+	@Override
 	public void run(){
 		
 		try {			
@@ -112,7 +112,7 @@ public class ServerThread extends Thread{
 			this.secureSocket = SocketUtil.connectToClientSocket(SECURE_PORT_NUMBER);
 
 			//start of the DES encryption
-			bobDesKey = DesCrypt.desKey(diffieBob.getBobKeyAgree(), diffieBob.getAlicePubKey() );
+			bobDesKey = DesCrypt.createDesKey(diffieBob.getBobKeyAgree(), diffieBob.getAlicePubKey() );
 
 			open();	
 
@@ -125,7 +125,7 @@ public class ServerThread extends Thread{
 				
 				server.handle(new Message(recovered));
 				
-				if(new String(recovered)=="QUIT"){
+				if("QUIT".equals(new String(recovered)) ){
 					close();
 					return;
 				}

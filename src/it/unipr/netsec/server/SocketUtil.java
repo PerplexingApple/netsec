@@ -25,19 +25,19 @@ public class SocketUtil {
 	
 	private static final Logger LOGGER = Logger.getLogger( SocketUtil.class.getName() );
 
-	public SocketUtil() {
-		// TODO Auto-generated constructor stub
-	}
 	
 	public static Socket connectToClientSocket(int port) throws IOException{
+
 		ServerSocket serverSocket = new ServerSocket(port);
+		try{
+			LOGGER.log( Level.INFO, "Waiting for client on port " + serverSocket.getLocalPort() + "...");
+			Socket socket = serverSocket.accept();
+			LOGGER.log( Level.INFO, "Just connected to " + socket.getRemoteSocketAddress());
+			return socket;
 
-		LOGGER.log( Level.INFO, "Waiting for client on port " + serverSocket.getLocalPort() + "...");
-		Socket socket = serverSocket.accept();
-		LOGGER.log( Level.INFO, "Just connected to " + socket.getRemoteSocketAddress());
-		serverSocket.close();
-
-		return socket;
+		}finally{
+			serverSocket.close();
+		}
 	}
 	
 	public static int getPort(BufferedReader reader, PrintStream out, String message) {
@@ -99,7 +99,7 @@ public class SocketUtil {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public static byte[] receive(ObjectInputStream inStream) throws ClassNotFoundException, IOException{
+	public static byte[] receive(ObjectInputStream inStream) throws Exception{
 		Message currMessage = (Message) inStream.readObject();
 		LOGGER.log(Level.INFO, "receiving message: " + ByteFunc.bytesToHexString(currMessage.getText() ) );
 		return currMessage.getText();
@@ -111,15 +111,13 @@ public class SocketUtil {
 			recovered = DesCrypt.decrypt( receive(inSecure), bobDesKey);
 		
 			System.out.printf(new String(recovered) + "%n");
-			if(new String(recovered)=="QUIT"){
+			if( "QUIT".equals(new String(recovered)) ){
 				LOGGER.log(Level.INFO, "Finished");
 	
 				secureSocket.close();
 				return;
 			}
-		} catch (InvalidKeyException | IllegalBlockSizeException
-				| BadPaddingException | NoSuchAlgorithmException
-				| NoSuchPaddingException | ClassNotFoundException | IOException e) {
+		} catch (Exception e) {
 			LOGGER.log(Level.SEVERE, e.toString() );
 		}
 	}

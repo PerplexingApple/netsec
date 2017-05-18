@@ -1,10 +1,8 @@
 package it.unipr.netsec.view;
 
 
-import it.unipr.netsec.client.Client;
 import it.unipr.netsec.crypto.DesCrypt;
 import it.unipr.netsec.server.SocketUtil;
-import it.unipr.netsec.util.ByteFunc;
 import it.unipr.netsec.util.Message;
 
 import java.awt.GridBagConstraints;
@@ -13,14 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -35,7 +28,8 @@ public class ClientView extends JPanel implements ActionListener {
 	// Constants
 	//===================================
 	private static final int TEXT_HEIGHT = 10;
-	private static final int Width = 30;
+	private static final int INPUT_WIDTH = 30;
+	private static final int AREA_WIDTH = 30;
 	/**
 	 * 
 	 */
@@ -47,10 +41,10 @@ public class ClientView extends JPanel implements ActionListener {
 	//===================================
 	// Variables
 	//===================================
-	SecretKey aliceDesKey;
-	ObjectOutputStream out;
-	JTextField textField;
-	JTextArea textArea;
+	private SecretKey aliceDesKey;
+	private ObjectOutputStream out;
+	private JTextField textField;
+	private JTextArea textArea;
 
 	//===================================
 	// Constructor
@@ -70,10 +64,10 @@ public class ClientView extends JPanel implements ActionListener {
 	//===================================
 	public void createPanels(){
 		LOGGER.log(Level.INFO, "Constructing panels... ");
-		textField = new JTextField(Width);
+		textField = new JTextField(INPUT_WIDTH);
 		textField.addActionListener(this);
 
-		textArea = new JTextArea(TEXT_HEIGHT, Width);
+		textArea = new JTextArea(TEXT_HEIGHT, AREA_WIDTH);
 		textArea.setEditable(false);
 
 		JScrollPane scrollPane = new JScrollPane(textArea);
@@ -122,12 +116,9 @@ public class ClientView extends JPanel implements ActionListener {
     /**
      * Schedule a job for the event-dispatching thread
      */
+    @Override
     public void show() {
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        javax.swing.SwingUtilities.invokeLater(() -> createAndShowGUI() );
     }
 
 
@@ -144,8 +135,8 @@ public class ClientView extends JPanel implements ActionListener {
 			textField.setText("");	
 		
 			SocketUtil.send( new Message(crypted), out);
-		} catch (IOException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException | NoSuchPaddingException e1) {
-			LOGGER.log(Level.SEVERE, e1.toString());
+		} catch (Exception el) {
+			LOGGER.log(Level.SEVERE, el.toString());
 		}
 
 	}
