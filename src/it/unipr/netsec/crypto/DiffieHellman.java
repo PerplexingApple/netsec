@@ -34,7 +34,7 @@ public class DiffieHellman {
 	//==================================================================
 	private static final Logger LOGGER = Logger.getLogger( DiffieHellman.class.getName() );
 
-	// The 1024 bit Diffie-Hellman modulus values used by SKIP
+	// The 1024 bit Diffie-Hellman modulus values
 	private static final byte[] skip1024ModulusBytes = {
 		(byte)0xF4, (byte)0x88, (byte)0xFD, (byte)0x58,
 		(byte)0x4E, (byte)0x49, (byte)0xDB, (byte)0xCD,

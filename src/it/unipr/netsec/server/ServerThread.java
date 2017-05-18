@@ -61,7 +61,7 @@ public class ServerThread extends Thread{
 	/**
 	 * Wrapper for server use for sending encrypted messages.
 	 * Accepts messages, then encrypts contained text and sends new Messages in their place
-	 * @param message to be encryptes adn sent
+	 * @param message to be encrypted and sent
 	 */
 	public void send(Message message) {
 		try {
@@ -72,6 +72,18 @@ public class ServerThread extends Thread{
 		} catch (Exception  e) {
 			LOGGER.log(Level.SEVERE, e.toString() );
 		}
+	}
+	
+	/**
+	 * Wrapper for receiving an encrypted message
+	 * @return
+	 * @throws Exception
+	 */
+	public byte[] receive() throws Exception{
+		byte[] recovered = DesCrypt.decrypt( SocketUtil.receive(inSecure), bobDesKey);
+		System.out.printf(new String(recovered) + "%n");
+		
+		return recovered;
 	}
 	
 	/**
@@ -120,8 +132,7 @@ public class ServerThread extends Thread{
 			while (true) {
 
 				LOGGER.log(Level.INFO, "Waiting for encrypted message ...");
-				byte[] recovered = DesCrypt.decrypt( SocketUtil.receive(inSecure), bobDesKey);
-				System.out.printf(new String(recovered) + "%n");
+				byte[] recovered = receive();
 				
 				server.handle(new Message(recovered));
 				
