@@ -20,6 +20,9 @@ public class IncomingTrafficListener implements Runnable {
 	ClientView view;
 	Client client;
 	
+	//===================================
+	// Constructor
+	//===================================
 	public IncomingTrafficListener(Client client, ClientView view) {
 		super();
 		
@@ -29,6 +32,9 @@ public class IncomingTrafficListener implements Runnable {
 		this.view = view;	
 	}	
 
+	//===================================
+	// Methods
+	//===================================
 	@Override
 	public void run() {
 		

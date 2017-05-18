@@ -3,7 +3,6 @@ package it.unipr.netsec.server;
 import it.unipr.netsec.util.Message;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.logging.*;
 
@@ -28,7 +27,7 @@ public class Server implements Runnable{
 		}
 		else{
 			LOGGER.log(Level.INFO, "Client refused: maximum " + clients.length + " reached.");
-		}			;
+		}			
 	}
 	
 	public void handle(Message message){  

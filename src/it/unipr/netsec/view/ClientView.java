@@ -30,6 +30,10 @@ import javax.swing.JTextField;
 
 
 public class ClientView extends JPanel implements ActionListener {
+	
+	//===================================
+	// Constants
+	//===================================
 	private static final int TEXT_HEIGHT = 10;
 	private static final int Width = 30;
 	/**
@@ -38,14 +42,19 @@ public class ClientView extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOGGER = Logger.getLogger( ClientView.class.getName() );
 	
-
 	private final static String newline = "\n";
 	
+	//===================================
+	// Variables
+	//===================================
 	SecretKey aliceDesKey;
 	ObjectOutputStream out;
 	JTextField textField;
 	JTextArea textArea;
 
+	//===================================
+	// Constructor
+	//===================================
 	public ClientView(ObjectOutputStream out, SecretKey aliceDesKey) {		
 		super(new GridBagLayout());
 		
@@ -56,6 +65,9 @@ public class ClientView extends JPanel implements ActionListener {
 		this.out = out;
 	}
 	
+	//===================================
+	// Methods
+	//===================================
 	public void createPanels(){
 		LOGGER.log(Level.INFO, "Constructing panels... ");
 		textField = new JTextField(Width);

@@ -32,7 +32,10 @@ public class Client implements Runnable{
 	private static final int SECURE_SOCKET_PORT = 1060;
 	
 	private static final Logger LOGGER = Logger.getLogger( Client.class.getName() );
-	
+
+	//===================================
+	// Variables
+	//===================================
 	ClientView view;
 	IncomingTrafficListener controller;
 	BufferedReader reader;
@@ -45,7 +48,9 @@ public class Client implements Runnable{
 	Socket secureSocket;
 	
 	
-	
+	//===================================
+	// Constructor
+	//===================================
 	private Client() throws Exception {
 		this.reader = new BufferedReader(new InputStreamReader(System.in));	
 	
@@ -60,7 +65,10 @@ public class Client implements Runnable{
 		this.inSecure = createIn(secureSocket);
 		
 	}
-
+	
+	//===================================
+	// Getters and setters
+	//===================================
 	public SecretKey getAliceDesKey() {
 		return aliceDesKey;
 	}
@@ -81,9 +89,9 @@ public class Client implements Runnable{
 		return view;
 	}
 
-	//===============
-	//Methods
-	//===============
+	//===================================
+	// Methods
+	//===================================
 	/**
 	 * 
 	 * @param host
@@ -109,8 +117,7 @@ public class Client implements Runnable{
 		LOGGER.log(Level.INFO, "Creating unsecure connection... ");
 		Socket unsecureSocket = connectToServerSocket(HOST_NAME, UNSECURE_SOCKET_PORT);
 	
-		ObjectOutputStream outStream = createOut(unsecureSocket);
-	
+		ObjectOutputStream outStream = createOut(unsecureSocket);	
 		ObjectInputStream inStream = createIn(unsecureSocket);	
 	
 		String mode = "USE_SKIP_DH_PARAMS";
