@@ -12,17 +12,29 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.print.attribute.standard.Severity;
 
 public class ServerThread extends Thread{
 
+	//===================================
+	// Constants
+	//===================================
 	private static final int SECURE_PORT_NUMBER = 1060;
 	private static final Logger LOGGER = Logger.getLogger( ServerThread.class.getName() );	
 
+	
+	//===================================
+	// Variables
+	//===================================
 	Server server;
 	
 	private Socket unsecureSocket;
@@ -30,60 +42,42 @@ public class ServerThread extends Thread{
 	
 	private ObjectOutputStream outSecure;
 	private ObjectInputStream inSecure;
-	private BufferedReader reader;
+	
+	private SecretKey bobDesKey;
 
+	//===================================
+	// Constructor
+	//===================================
 	public ServerThread(Socket unsecureSocket, Server server) {
 		LOGGER.log(Level.INFO, "Receiving a socket from main...");
 		
 		this.unsecureSocket = unsecureSocket;
 		this.server = server;
-		this.reader = new BufferedReader(new InputStreamReader(System.in));
 	}
 
+	//===================================
+	// Methods
+	//===================================
 	/**
-	 * Encapsulates everything necessary for exchanging in a Diffie Hellman key exchange
-	 * @return DiffieHellman object containing all data
-	 * @throws Exception
-	 */
-	private static DiffieHellman createUnsecureDHExchangeFromBob(Socket unsecureSocket) throws Exception{
-
-		ObjectOutputStream outStream = new ObjectOutputStream(unsecureSocket.getOutputStream());
-		outStream.flush();
-		LOGGER.log(Level.INFO, "Created unsecure outputStream ...");
-		ObjectInputStream inStream = new ObjectInputStream(new BufferedInputStream(unsecureSocket.getInputStream()));
-		LOGGER.log(Level.INFO, "Created unsecure inputStream ...");	                
-
-		DiffieHellman diffieBob = new DiffieHellman();
-
-		LOGGER.log(Level.INFO, "receiving AlicePubKeyEnc ...");
-		byte[] alicePubKeyEnc = SocketUtil.receive(inStream);	    		    
-		byte[] bobPubKeyEnc = diffieBob.initilizeBobFromAlice(alicePubKeyEnc);
-
-		SocketUtil.send(new Message(bobPubKeyEnc), outStream);
-
-		diffieBob.lastPhaseBob( diffieBob.getAlicePubKey() );
-		LOGGER.log(Level.INFO, "Bob has finished DH exchange");	
-
-		//Closing socket after use to prevent resource leakage
-		unsecureSocket.close();
-		LOGGER.log(Level.INFO, "Bob has closed unsecure connection ...");
-
-		return diffieBob;
-	}
-	
-	/**
-	 * Wrapper for server use
-	 * @param message
+	 * Wrapper for server use for sending encrypted messages.
+	 * Accepts messages, then encrypts contained text and sends new Messages in their place
+	 * @param message to be encryptes adn sent
 	 */
 	public void send(Message message) {
 		try {
-			SocketUtil.send(message, outSecure);
-		} catch (IOException e) {
+			byte[] textToBeSentSecurely = message.getText();
+			Message messageToBeSent = new Message(DesCrypt.encrypt( textToBeSentSecurely, bobDesKey) );
+			SocketUtil.send( messageToBeSent, outSecure);
+			
+		} catch (IOException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException |
+				NoSuchAlgorithmException | NoSuchPaddingException e) {
 			LOGGER.log(Level.SEVERE, e.toString() );
 		}
 	}
 	
-	
+	/**
+	 * Open secure Object Streams
+	 */
 	public void open(){
 		try {
 			this.outSecure = new ObjectOutputStream(secureSocket.getOutputStream());		
@@ -97,6 +91,9 @@ public class ServerThread extends Thread{
 		}	
 	}
 	
+	/**
+	 * Close sockets to avoid resource leaks
+	 */
 	public void close(){
 		LOGGER.log(Level.INFO, "Client has finished his connection");
 		try {
@@ -110,12 +107,12 @@ public class ServerThread extends Thread{
 		
 		try {			
 
-			DiffieHellman diffieBob = createUnsecureDHExchangeFromBob(unsecureSocket);		
+			DiffieHellman diffieBob = DiffieHellman.createUnsecureDHExchangeFromBob(unsecureSocket);		
 
 			this.secureSocket = SocketUtil.connectToClientSocket(SECURE_PORT_NUMBER);
 
 			//start of the DES encryption
-			SecretKey bobDesKey = DesCrypt.desKey(diffieBob.getBobKeyAgree(), diffieBob.getAlicePubKey() );
+			bobDesKey = DesCrypt.desKey(diffieBob.getBobKeyAgree(), diffieBob.getAlicePubKey() );
 
 			open();	
 
@@ -129,9 +126,7 @@ public class ServerThread extends Thread{
 				server.handle(new Message(recovered));
 				
 				if(new String(recovered)=="QUIT"){
-					LOGGER.log(Level.INFO, "Client has finished his connection");
-
-					secureSocket.close();
+					close();
 					return;
 				}
 			}

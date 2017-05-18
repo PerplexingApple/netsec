@@ -12,9 +12,9 @@ public class Message implements Serializable{
 	private byte[] text;
 	private int command;
 
-	//////////////////////////
+	//===================================
 	// Constructors
-	//////////////////////////
+	//===================================
 	/**
 	 * Saves a string as a byte array
 	 * @param text is a String of plaintext
@@ -30,9 +30,9 @@ public class Message implements Serializable{
 		this.text = text;			
 	}
 	
-	//////////////////////////
+	//===================================
 	// Methods
-	//////////////////////////
+	//===================================
 	/**
 	 * Constructs a readable Java String for immediate use
 	 * @return in String format
@@ -43,11 +43,15 @@ public class Message implements Serializable{
 	}
 
 	
-	//////////////////////////
+	//===================================
 	// Getters and setters
-	//////////////////////////
+	//===================================
 	public byte[] getText() {
 		return this.text;
+	}
+	
+	public void setText(byte[] text) {
+		this.text = text;;
 	}
 
 	public void plaintextToBytes(String text) {

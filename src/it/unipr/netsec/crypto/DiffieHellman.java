@@ -1,9 +1,16 @@
 package it.unipr.netsec.crypto;
 
+import it.unipr.netsec.server.ServerThread;
+import it.unipr.netsec.server.SocketUtil;
 import it.unipr.netsec.util.ByteFunc;
 import it.unipr.netsec.util.ByteFunc;
+import it.unipr.netsec.util.Message;
 
+import java.io.BufferedInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
+import java.net.Socket;
 import java.security.AlgorithmParameterGenerator;
 import java.security.AlgorithmParameters;
 import java.security.InvalidAlgorithmParameterException;
@@ -126,13 +133,14 @@ public class DiffieHellman {
 		return x509KeySpec;
 	}
 
-	////////////////
-	//Working methods
-	////////////////
+	//==================================================================
+	//Methods
+	//==================================================================
 	/**
-	 * Generates DH parameters. Modes: default parameters or new parameters
+	 * Generates DH Parameters. Modes: default parameters or new parameters
 	 * @param mode
-	 * @return The parameters that are a prime p, a base g, and optionally the length in bits of the private value, l.
+	 * @return DHParameterSpec containing the parameters that are a prime p, a base g, 
+	 * and optionally the length in bits of the private value, l.
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidParameterSpecException
 	 */
@@ -140,7 +148,7 @@ public class DiffieHellman {
 		DHParameterSpec dhSkipParamSpec;
 
 		if (mode.equals("GENERATE_DH_PARAMS")) {
-			// Some central authority creates new DH parameters
+			// Create new DH parameters
 			LOGGER.log(Level.INFO, "Creating Diffie-Hellman parameters (takes VERY long) ...");
 
 			AlgorithmParameterGenerator paramGen = AlgorithmParameterGenerator.getInstance("DH");
@@ -150,7 +158,7 @@ public class DiffieHellman {
 			dhSkipParamSpec = (DHParameterSpec)param.getParameterSpec(DHParameterSpec.class);
 		} 
 		else {
-			// use some pre-generated, default DH parameters
+			// use pre-generated, default DH parameters
 			LOGGER.log(Level.INFO, "Using SKIP Diffie-Hellman parameters");
 			dhSkipParamSpec = new DHParameterSpec(skip1024Modulus, skip1024Base);
 		} 
@@ -158,7 +166,7 @@ public class DiffieHellman {
 	}
 
 	/**
-	 * 
+	 * Generates a Key Pair from a set of DH Parameters using a Key Generator set to the DH algorithm
 	 * @param dhSkipParamSpec
 	 * @return
 	 * @throws NoSuchAlgorithmException
@@ -176,7 +184,6 @@ public class DiffieHellman {
 	/**
 	 * Compute a Key Agreement from the Key PAir
 	 * @param key_pair
-	 * @param y
 	 * @return
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
@@ -279,6 +286,37 @@ public class DiffieHellman {
 		
 		LOGGER.log(Level.INFO, "BOB: Execute PHASE1 ...");
 		this.bobKeyAgree.doPhase(alicePubKey, true);
+	}
+
+	/**
+	 * Encapsulates everything necessary for exchanging in a Diffie Hellman key exchange
+	 * @return DiffieHellman object containing all data
+	 * @throws Exception
+	 */
+	public static DiffieHellman createUnsecureDHExchangeFromBob(Socket unsecureSocket) throws Exception{
+	
+		ObjectOutputStream outStream = new ObjectOutputStream(unsecureSocket.getOutputStream());
+		outStream.flush();
+		LOGGER.log(Level.INFO, "Created unsecure outputStream ...");
+		ObjectInputStream inStream = new ObjectInputStream(new BufferedInputStream(unsecureSocket.getInputStream()));
+		LOGGER.log(Level.INFO, "Created unsecure inputStream ...");	                
+	
+		DiffieHellman diffieBob = new DiffieHellman();
+	
+		LOGGER.log(Level.INFO, "receiving AlicePubKeyEnc ...");
+		byte[] alicePubKeyEnc = SocketUtil.receive(inStream);	    		    
+		byte[] bobPubKeyEnc = diffieBob.initilizeBobFromAlice(alicePubKeyEnc);
+	
+		SocketUtil.send(new Message(bobPubKeyEnc), outStream);
+	
+		diffieBob.lastPhaseBob( diffieBob.getAlicePubKey() );
+		LOGGER.log(Level.INFO, "Bob has finished DH exchange");	
+	
+		//Closing socket after use to prevent resource leakage
+		unsecureSocket.close();
+		LOGGER.log(Level.INFO, "Bob has closed unsecure connection ...");
+	
+		return diffieBob;
 	}
 
 }

@@ -107,8 +107,10 @@ public class ClientView extends JPanel implements ActionListener {
         frame.setVisible(true);
     }
 
+    /**
+     * Schedule a job for the event-dispatching thread
+     */
     public void show() {
-        //Schedule a job for the event-dispatching thread
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();

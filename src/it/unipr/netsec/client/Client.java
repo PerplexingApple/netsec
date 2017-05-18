@@ -6,7 +6,6 @@ import it.unipr.netsec.server.SocketUtil;
 import it.unipr.netsec.util.ByteFunc;
 import it.unipr.netsec.util.Message;
 import it.unipr.netsec.view.ClientView;
-import it.unipr.netsec.view.ViewController;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -35,7 +34,7 @@ public class Client implements Runnable{
 	private static final Logger LOGGER = Logger.getLogger( Client.class.getName() );
 	
 	ClientView view;
-	ViewController controller;
+	IncomingTrafficListener controller;
 	BufferedReader reader;
 	
 	DiffieHellman diffieAlice;
@@ -49,9 +48,7 @@ public class Client implements Runnable{
 	
 	private Client() throws Exception {
 		this.reader = new BufferedReader(new InputStreamReader(System.in));	
-		
-		this.controller = new ViewController(this);
-		
+	
 		this.diffieAlice = createUnsecureDHExchangeFromAlice();		
 
 		this.secureSocket = connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
@@ -62,7 +59,6 @@ public class Client implements Runnable{
 
 		this.inSecure = createIn(secureSocket);
 		
-		this.view = new ClientView(outSecure, aliceDesKey);
 	}
 
 	public SecretKey getAliceDesKey() {
@@ -71,6 +67,10 @@ public class Client implements Runnable{
 
 	public ObjectInputStream getInSecure() {
 		return inSecure;
+	}
+	
+	public ObjectOutputStream getOutSecure() {
+		return outSecure;
 	}
 
 	public Socket getSecureSocket() {
@@ -84,6 +84,13 @@ public class Client implements Runnable{
 	//===============
 	//Methods
 	//===============
+	/**
+	 * 
+	 * @param host
+	 * @param port
+	 * @return
+	 * @throws IOException
+	 */
 	public static Socket connectToServerSocket(String host, int port) throws IOException{
 		Socket clientSocket = null;
 		clientSocket = new Socket(host, port);
@@ -136,8 +143,21 @@ public class Client implements Runnable{
 		return in;
 	}
 	
+	public void close(){
+		LOGGER.log(Level.INFO, "Client has finished his connection");
+		try {
+			secureSocket.close();
+		} catch (IOException e) {
+			LOGGER.log(Level.SEVERE, e.toString() );
+		}
+	}
+	
 	@Override
-	public void run() {	        
+	public void run() {
+		
+		this.view = new ClientView(outSecure, aliceDesKey );
+		
+		this.controller = new IncomingTrafficListener(this, view);
 
 		view.show();
 		controller.run();

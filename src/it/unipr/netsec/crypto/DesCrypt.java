@@ -19,10 +19,45 @@ import java.util.logging.Logger;
 public class DesCrypt {
 	
 	private static final Logger LOGGER = Logger.getLogger( DesCrypt.class.getName() );
+	
+	//==================================================================
+	//Variables
+	//==================================================================
 	Cipher cipher;
 	String key_algo;
 	SecretKey secret_key;
 	
+	//==================================================================
+	//Getters and setters
+	//==================================================================
+	/**
+	 * choose default padding and algorithm
+	 * @return
+	 */
+	private static String defaultAlgo() {
+		return "DES/ECB/PKCS5Padding";
+	}
+	
+	/**
+	 * create a 16 bytes long key array
+	 * @param hexKey
+	 * @return
+	 */
+	public byte[] hexkeyToBytes(String hexKey) {
+		return ByteFunc.hexStringToByteArray(hexKey);
+	}
+
+	//==================================================================
+	//Methods
+	//==================================================================
+	/**
+	 * transform into a 16 bytes long initialization vector
+	 * @param hexIV
+	 * @return
+	 */
+	public byte[] hexIvToBytes(String hexIV) {
+		return ByteFunc.hexStringToByteArray(hexIV);
+	}
 	public static SecretKey desKey(KeyAgreement keyAgree, PublicKey pubKey) throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException{		
 		// The call to bobKeyAgree.generateSecret above reset the key
         // agreement object, so we call doPhase again prior to another
@@ -35,13 +70,14 @@ public class DesCrypt {
 	
 	/**
 	 * Encrypt plaintext through the initialized Cipher
-	 * @param plaintext
-	 * @return ciphertext in a byte array
-	 * @throws InvalidKeyException 
-	 * @throws BadPaddingException 
-	 * @throws IllegalBlockSizeException 
-	 * @throws NoSuchPaddingException 
-	 * @throws NoSuchAlgorithmException 
+	 * @param cleartext
+	 * @param desKey
+	 * @return encrypted text in a byte array
+	 * @throws InvalidKeyException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
 	 */
 	public static byte[] encrypt(byte[] cleartext, SecretKey desKey) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException{
 
@@ -74,33 +110,6 @@ public class DesCrypt {
 	}
 	
 	
-	/////
-	//Getters and setters
-	/////
-	/**
-	 * choose default padding and algorithm
-	 * @return
-	 */
-	private static String defaultAlgo() {
-		return "DES/ECB/PKCS5Padding";
-	}
-	
-	/**
-	 * create a 16 bytes long key array
-	 * @param hexKey
-	 * @return
-	 */
-	public byte[] hexkeyToBytes(String hexKey) {
-		return ByteFunc.hexStringToByteArray(hexKey);
-	}
 
-	/**
-	 * transform into a 16 bytes long initialization vector
-	 * @param hexIV
-	 * @return
-	 */
-	public byte[] hexIvToBytes(String hexIV) {
-		return ByteFunc.hexStringToByteArray(hexIV);
-	}
 
 }
