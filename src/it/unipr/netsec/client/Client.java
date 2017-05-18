@@ -159,6 +159,11 @@ public class Client implements Runnable{
 		}
 	}
 	
+	public void send(Message message) throws IOException {
+		LOGGER.log(Level.INFO, "Sending ciphertext ...");
+		SocketUtil.send(message, outSecure);
+	}
+	
 	@Override
 	public void run() {
 		
@@ -176,17 +181,14 @@ public class Client implements Runnable{
 				Message cipherMessage = new Message( DesCrypt.encrypt( newTextInput, aliceDesKey) );
 				LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
 				
-				if ("QUIT".equalsIgnoreCase(new String(newTextInput)) ) {
+				if ("QUIT".equals(new String(newTextInput)) ) {
 					LOGGER.log(Level.INFO, "Closing connection with Client ...");
 					
 					SocketUtil.send(cipherMessage, outSecure);	
-					secureSocket.close();
-					
+					secureSocket.close();					
 					return;
 				} else {
-					LOGGER.log(Level.INFO, "Sending ciphertext ...");
-					SocketUtil.send(cipherMessage, outSecure);
-
+					send(cipherMessage);
 				}
 			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e.toString() );
