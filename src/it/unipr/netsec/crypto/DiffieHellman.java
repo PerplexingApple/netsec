@@ -1,7 +1,7 @@
 package it.unipr.netsec.crypto;
 
-import it.unipr.netsec.server.SocketUtil;
 import it.unipr.netsec.util.Message;
+import it.unipr.netsec.util.SocketUtil;
 
 import java.io.BufferedInputStream;
 import java.io.ObjectInputStream;

@@ -2,8 +2,8 @@ package it.unipr.netsec.view;
 
 
 import it.unipr.netsec.crypto.DesCrypt;
-import it.unipr.netsec.server.SocketUtil;
 import it.unipr.netsec.util.Message;
+import it.unipr.netsec.util.SocketUtil;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

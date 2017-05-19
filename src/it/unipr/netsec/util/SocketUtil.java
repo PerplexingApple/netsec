@@ -1,7 +1,4 @@
-package it.unipr.netsec.server;
-
-import it.unipr.netsec.util.ByteFunc;
-import it.unipr.netsec.util.Message;
+package it.unipr.netsec.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;

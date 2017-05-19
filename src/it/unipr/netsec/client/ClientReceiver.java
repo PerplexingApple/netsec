@@ -1,7 +1,7 @@
 package it.unipr.netsec.client;
 
 import it.unipr.netsec.crypto.DesCrypt;
-import it.unipr.netsec.server.SocketUtil;
+import it.unipr.netsec.util.SocketUtil;
 import it.unipr.netsec.view.ClientView;
 
 import java.io.IOException;

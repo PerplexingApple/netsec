@@ -4,6 +4,7 @@ import it.unipr.netsec.crypto.DesCrypt;
 import it.unipr.netsec.crypto.DiffieHellman;
 import it.unipr.netsec.util.ByteFunc;
 import it.unipr.netsec.util.Message;
+import it.unipr.netsec.util.SocketUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

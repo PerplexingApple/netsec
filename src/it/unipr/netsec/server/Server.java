@@ -1,6 +1,7 @@
 package it.unipr.netsec.server;
 
 import it.unipr.netsec.util.Message;
+import it.unipr.netsec.util.SocketUtil;
 
 import java.io.IOException;
 import java.net.Socket;
