@@ -1,5 +1,7 @@
 package it.unipr.netsec.util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -41,6 +43,21 @@ public class SocketUtil {
 			serverSocket.close();
 		}
 	}	
+	
+	/**
+	 * Creates a socket connected to the specified host
+	 * @param host
+	 * @param port
+	 * @return clientSocket is a standard Socket
+	 * @throws IOException
+	 */
+	public static Socket connectToServerSocket(String host, int port) throws IOException{
+		Socket clientSocket = null;
+		clientSocket = new Socket(host, port);
+	
+		LOGGER.log(Level.INFO, "Connecting to: " + host + " " + port);
+		return clientSocket;
+	}
 	
 	/**
 	 * Read the command line input and save it into a byte Array
@@ -85,6 +102,21 @@ public class SocketUtil {
 		LOGGER.log(Level.INFO, "receiving message: " + ByteFunc.bytesToHexString(currMessage.getText() ) );
 		return currMessage.getText();
 	}
+
+	public static ObjectInputStream createIn(Socket socket) throws IOException{
+		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
+		LOGGER.log(Level.INFO, "Created inputStream ...");
+		return in;
+	}
+
+	public static ObjectOutputStream createOut(Socket socket) throws IOException{
+		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+		out.flush();
+		LOGGER.log(Level.INFO, "Created outputStream and flushed to send the header...");
+		return out;
+	}
+
+	
 
 
 }

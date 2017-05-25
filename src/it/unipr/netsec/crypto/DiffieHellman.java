@@ -1,5 +1,6 @@
 package it.unipr.netsec.crypto;
 
+import it.unipr.netsec.client.Client;
 import it.unipr.netsec.util.Message;
 import it.unipr.netsec.util.SocketUtil;
 
@@ -270,6 +271,36 @@ public class DiffieHellman {
 		
 		LOGGER.log(Level.INFO, "BOB: Execute PHASE last ...");
 		this.bobKeyAgree.doPhase(alicePubKey, true);
+	}
+
+	/**
+	 * Encapsulates everything necessary for exchanging in a Diffie Hellman key exchange
+	 * @return DiffieHellman object containing all data
+	 * @throws Exception
+	 */
+	public static DiffieHellman createUnsecureDHExchangeFromAlice(String host, int port) throws Exception{
+	
+		LOGGER.log(Level.INFO, "Creating unsecure connection... ");
+		Socket unsecureSocket = SocketUtil.connectToServerSocket(host, port);
+	
+		ObjectOutputStream outStream = SocketUtil.createOut(unsecureSocket);	
+		ObjectInputStream inStream = SocketUtil.createIn(unsecureSocket);	
+	
+		String mode = "USE_SKIP_DH_PARAMS";
+		DiffieHellman diffieAlice = new DiffieHellman();
+		byte[] alicePubKeyEncoded = diffieAlice.initializeAlice(mode);
+		LOGGER.log(Level.INFO, "Sending AlicePubKey ...");
+		SocketUtil.send(new Message(alicePubKeyEncoded), outStream);
+	
+		byte[] bobPubKeyEncoded = SocketUtil.receive(inStream);
+		diffieAlice.lastPhaseAlice(bobPubKeyEncoded);
+		LOGGER.log(Level.INFO, "Alice has finished DH exchange");
+	
+		//Closing socket after use to prevent resource leakage
+		unsecureSocket.close();
+		LOGGER.log(Level.INFO, "Alice has closed an unsecure connection ...");
+	
+		return diffieAlice;
 	}
 
 	/**

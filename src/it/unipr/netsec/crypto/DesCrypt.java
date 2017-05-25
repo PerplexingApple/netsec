@@ -107,10 +107,10 @@ public class DesCrypt {
 	 * @throws NoSuchAlgorithmException 
 	 */
 	public static byte[] decrypt(byte[] ciphertext, SecretKey desKey) throws Exception{
-		Cipher aliceCipher = Cipher.getInstance( DEFAULT_DES_ALGORITHM );
-        aliceCipher.init(Cipher.DECRYPT_MODE, desKey);
-        byte[] recovered = aliceCipher.doFinal(ciphertext);
-        LOGGER.log(Level.INFO, "Alice reads cleartext: " + ByteFunc.bytesToHexString(recovered));
+		Cipher cipher = Cipher.getInstance( DEFAULT_DES_ALGORITHM );
+        cipher.init(Cipher.DECRYPT_MODE, desKey);
+        byte[] recovered = cipher.doFinal(ciphertext);
+        LOGGER.log(Level.INFO, "Entity reads cleartext: " + ByteFunc.bytesToHexString(recovered));
 		return recovered;
 	}
 	

@@ -7,8 +7,6 @@ import it.unipr.netsec.util.Message;
 import it.unipr.netsec.util.SocketUtil;
 import it.unipr.netsec.view.ClientView;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,16 +34,16 @@ public class Client implements Runnable{
 	//===================================
 	// Variables
 	//===================================
-	ClientView view;
-	ClientReceiver controller;
-	BufferedReader reader;
+	private ClientView view;
+	private ClientReceiver controller;
+	private BufferedReader reader;
 	
-	DiffieHellman diffieAlice;
-	SecretKey aliceDesKey;	
+	private DiffieHellman diffieAlice;
+	private SecretKey aliceDesKey;	
 	
-	ObjectOutputStream outSecure;
-	ObjectInputStream inSecure;	
-	Socket secureSocket;
+	private ObjectOutputStream outSecure;
+	private ObjectInputStream inSecure;	
+	private Socket secureSocket;
 	
 	
 	//===================================
@@ -54,15 +52,15 @@ public class Client implements Runnable{
 	private Client() throws Exception {
 		this.reader = new BufferedReader(new InputStreamReader(System.in));	
 	
-		this.diffieAlice = createUnsecureDHExchangeFromAlice();		
+		this.diffieAlice = DiffieHellman.createUnsecureDHExchangeFromAlice(HOST_NAME, UNSECURE_SOCKET_PORT);		
 
-		this.secureSocket = connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
+		this.secureSocket = SocketUtil.connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
 
 		this.aliceDesKey = DesCrypt.createDesKey(diffieAlice.getAliceKeyAgree(), diffieAlice.getBobPubKey());
 
-		this.outSecure = createOut(secureSocket);
+		this.outSecure = SocketUtil.createOut(secureSocket);
 
-		this.inSecure = createIn(secureSocket);
+		this.inSecure = SocketUtil.createIn(secureSocket);
 		
 	}
 	
@@ -102,64 +100,6 @@ public class Client implements Runnable{
 		SocketUtil.send(message, outSecure);
 	}
 	
-	/**
-	 * Connects to the specified server
-	 * @param host
-	 * @param port
-	 * @return
-	 * @throws IOException
-	 */
-	public static Socket connectToServerSocket(String host, int port) throws IOException{
-		Socket clientSocket = null;
-		clientSocket = new Socket(host, port);
-
-		LOGGER.log(Level.INFO, "Connecting to: " + host + " " + port);
-		return clientSocket;
-	}
-	
-	/**
-	 * Encapsulates everything necessary for exchanging in a Diffie Hellman key exchange
-	 * @return DiffieHellman object containing all data
-	 * @throws Exception
-	 */
-	public static DiffieHellman createUnsecureDHExchangeFromAlice() throws Exception{
-	
-		LOGGER.log(Level.INFO, "Creating unsecure connection... ");
-		Socket unsecureSocket = connectToServerSocket(HOST_NAME, UNSECURE_SOCKET_PORT);
-	
-		ObjectOutputStream outStream = createOut(unsecureSocket);	
-		ObjectInputStream inStream = createIn(unsecureSocket);	
-	
-		String mode = "USE_SKIP_DH_PARAMS";
-		DiffieHellman diffieAlice = new DiffieHellman();
-		byte[] alicePubKeyEncoded = diffieAlice.initializeAlice(mode);
-		LOGGER.log(Level.INFO, "Sending AlicePubKey ...");
-		SocketUtil.send(new Message(alicePubKeyEncoded), outStream);
-	
-		byte[] bobPubKeyEncoded = SocketUtil.receive(inStream);
-		diffieAlice.lastPhaseAlice(bobPubKeyEncoded);
-		LOGGER.log(Level.INFO, "Alice has finished DH exchange");
-	
-		//Closing socket after use to prevent resource leakage
-		unsecureSocket.close();
-		LOGGER.log(Level.INFO, "Alice has closed an unsecure connection ...");
-	
-		return diffieAlice;
-	}
-	
-	private static ObjectOutputStream createOut(Socket socket) throws IOException{
-		ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		out.flush();
-		LOGGER.log(Level.INFO, "Created outputStream and flushed to send the header...");
-		return out;
-	}
-	
-	private static ObjectInputStream createIn(Socket socket) throws IOException{
-		ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(socket.getInputStream()));
-		LOGGER.log(Level.INFO, "Created inputStream ...");
-		return in;
-	}
-	
 	public void close(){
 		LOGGER.log(Level.INFO, "Client has finished his connection");
 		try {
@@ -187,7 +127,7 @@ public class Client implements Runnable{
 				LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
 				
 				if ("QUIT".equals(new String(newTextInput)) ) {
-					LOGGER.log(Level.INFO, "Closing connection with Client ...");
+					LOGGER.log(Level.INFO, "Closing connection from Client ...");
 					
 					SocketUtil.send(cipherMessage, outSecure);	
 					secureSocket.close();					
