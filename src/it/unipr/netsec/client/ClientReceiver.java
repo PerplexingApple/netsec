@@ -1,6 +1,8 @@
 package it.unipr.netsec.client;
 
 import it.unipr.netsec.crypto.DesCrypt;
+import it.unipr.netsec.util.ByteFunc;
+import it.unipr.netsec.util.Message;
 import it.unipr.netsec.util.SocketUtil;
 import it.unipr.netsec.view.ClientView;
 
@@ -35,6 +37,33 @@ public class ClientReceiver implements Runnable {
 	//===================================
 	// Methods
 	//===================================
+	/**
+	 * Wrapper for receiving an encrypted message
+	 * @return
+	 * @throws Exception
+	 */
+	public byte[] receive() throws Exception{
+		byte[] crypted = SocketUtil.receive( client.getInSecure() );
+		byte[] recovered = DesCrypt.decrypt( crypted, client.getAliceDesKey() );
+		
+		System.out.printf(new String(recovered) );
+		
+		return recovered;
+	}
+	
+	/**
+	 * Wrapper for sending message that need to be encrypted
+	 * @param message
+	 * @throws Exception 
+	 */
+	public void send(Message message) throws Exception {
+		Message cipherMessage = new Message( DesCrypt.encrypt( message.getText(), client.getAliceDesKey()) );
+		LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
+		
+		LOGGER.log(Level.INFO, "Sending ciphertext ...");
+		SocketUtil.send(cipherMessage, client.getOutSecure() );
+	}
+	
 	@Override
 	public void run() {
 		
@@ -43,9 +72,7 @@ public class ClientReceiver implements Runnable {
 			
 				LOGGER.log(Level.INFO, "Client is ready to receive new messages... ");
 				
-				byte[] recovered = DesCrypt.decrypt( SocketUtil.receive( client.getInSecure() ), client.getAliceDesKey() );
-			
-				System.out.printf(new String(recovered) );
+				byte[] recovered = receive();
 				
 				LOGGER.log(Level.INFO, "View is writing a message... ");
 				view.updateText(new String(recovered) );				

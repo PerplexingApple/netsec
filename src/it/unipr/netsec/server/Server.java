@@ -41,8 +41,7 @@ public class Server implements Runnable{
 	public void run() {
 		while (true)
 		{	
-			//BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));			
-			//int socketPort = SocketUtil.getPort(reader, System.out, "Insert the port number for Unsecure connection.");
+
 			LOGGER.log(Level.INFO, "Creating a new socket ...");	
 			Socket unsecureSocket;
 			try {

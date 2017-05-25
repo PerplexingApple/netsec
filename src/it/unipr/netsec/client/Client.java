@@ -91,13 +91,12 @@ public class Client implements Runnable{
 	// Methods
 	//===================================
 	/**
-	 * Wrapper for sending encrypted messages
+	 * Wrapper for sending encrypted messages that uses the controller
 	 * @param message
-	 * @throws IOException
+	 * @throws Exception 
 	 */
-	public void send(Message message) throws IOException {
-		LOGGER.log(Level.INFO, "Sending ciphertext ...");
-		SocketUtil.send(message, outSecure);
+	private void send(Message message) throws Exception {
+		controller.send(message);
 	}
 	
 	public void close(){
@@ -123,17 +122,16 @@ public class Client implements Runnable{
 			try {
 				//get the message
 				byte[] newTextInput = SocketUtil.getInputIntoArray(reader, System.out);
-				Message cipherMessage = new Message( DesCrypt.encrypt( newTextInput, aliceDesKey) );
-				LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
+				Message message = new Message( newTextInput );
 				
 				if ("QUIT".equals(new String(newTextInput)) ) {
 					LOGGER.log(Level.INFO, "Closing connection from Client ...");
 					
-					SocketUtil.send(cipherMessage, outSecure);	
-					secureSocket.close();					
+					send(message);	
+					close();					
 					return;
 				} else {
-					send(cipherMessage);
+					send(message);
 				}
 			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e.toString() );

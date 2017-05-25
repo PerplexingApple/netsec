@@ -27,13 +27,15 @@ public class ClientView extends JPanel implements ActionListener {
 	//===================================
 	// Constants
 	//===================================
-	private static final int TEXT_HEIGHT = 10;
-	private static final int INPUT_WIDTH = 30;
-	private static final int AREA_WIDTH = 30;
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
+	private static final int TEXT_HEIGHT = 10;
+	private static final int INPUT_WIDTH = 30;
+	private static final int AREA_WIDTH = 30;
+	
 	private static final Logger LOGGER = Logger.getLogger( ClientView.class.getName() );
 	
 	private final static String newline = "\n";
@@ -118,7 +120,7 @@ public class ClientView extends JPanel implements ActionListener {
      */
     @Override
     public void show() {
-        javax.swing.SwingUtilities.invokeLater(() -> createAndShowGUI() );
+        javax.swing.SwingUtilities.invokeLater( () -> createAndShowGUI() );
     }
 
 
@@ -129,8 +131,6 @@ public class ClientView extends JPanel implements ActionListener {
 			String text = textField.getText();
 			byte[] plaintext =  text.getBytes();
 			byte[] crypted = DesCrypt.encrypt( plaintext, aliceDesKey);
-			
-			//updateText(text);	
 			
 			textField.setText("");	
 		

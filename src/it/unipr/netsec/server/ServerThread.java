@@ -60,7 +60,7 @@ public class ServerThread extends Thread{
 	// Methods
 	//===================================
 	/**
-	 * Wrapper for server use for sending encrypted messages.
+	 * Wrapper for server use for sending messages that need to be encrypted .
 	 * Accepts messages, then encrypts contained text and sends new Messages in their place
 	 * @param message to be encrypted and sent
 	 */
