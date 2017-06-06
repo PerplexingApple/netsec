@@ -50,17 +50,6 @@ public class Client implements Runnable{
 	// Constructor
 	//===================================
 	private Client() throws Exception {
-		this.reader = new BufferedReader(new InputStreamReader(System.in));	
-	
-		this.diffieAlice = DiffieHellman.createUnsecureDHExchangeFromAlice(HOST_NAME, UNSECURE_SOCKET_PORT);		
-
-		this.secureSocket = SocketUtil.connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
-
-		this.aliceDesKey = DesCrypt.createDesKey(diffieAlice.getAliceKeyAgree(), diffieAlice.getBobPubKey());
-
-		this.outSecure = SocketUtil.createOut(secureSocket);
-
-		this.inSecure = SocketUtil.createIn(secureSocket);
 		
 	}
 	
@@ -91,13 +80,37 @@ public class Client implements Runnable{
 	// Methods
 	//===================================
 	/**
+	 * Initialize through method calls everything necessary for running a client
+	 * @throws Exception
+	 */
+	private void init() throws Exception {
+		this.reader = new BufferedReader(new InputStreamReader(System.in));	
+		
+		this.diffieAlice = DiffieHellman.createUnsecureDHExchangeFromAlice(HOST_NAME, UNSECURE_SOCKET_PORT);		
+
+		this.secureSocket = SocketUtil.connectToServerSocket(HOST_NAME, SECURE_SOCKET_PORT);		    	
+
+		this.aliceDesKey = DesCrypt.createDesKey(diffieAlice.getAliceKeyAgree(), diffieAlice.getBobPubKey());
+
+		this.outSecure = SocketUtil.createOut(secureSocket);
+
+		this.inSecure = SocketUtil.createIn(secureSocket);
+		
+		this.view = new ClientView(outSecure, aliceDesKey );
+		
+		this.controller = new ClientReceiver(this, view);
+	}
+
+	/*
+	/**
 	 * Wrapper for sending encrypted messages that uses the controller
 	 * @param message
 	 * @throws Exception 
 	 */
-	private void send(Message message) throws Exception {
+	/*private void send(Message message) throws Exception {
 		controller.send(message);
-	}
+	}*/
+
 	
 	public void close(){
 		LOGGER.log(Level.INFO, "Client has finished his connection");
@@ -110,14 +123,19 @@ public class Client implements Runnable{
 	
 	@Override
 	public void run() {
-		
-		this.view = new ClientView(outSecure, aliceDesKey );
-		
-		this.controller = new ClientReceiver(this, view);
+		try {
+			init();
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.toString() );
+		}
 
 		view.show();
 		controller.run();
-			
+		
+		//==============================================================
+		//CLI version
+		//==============================================================
+		/*	
 		while(true){
 			try {
 				//get the message
@@ -138,6 +156,7 @@ public class Client implements Runnable{
 				return;
 			}
 		}
+		*/
 		//==============================================================
 		
 	}

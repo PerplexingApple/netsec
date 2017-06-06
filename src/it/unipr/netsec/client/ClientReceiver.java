@@ -52,13 +52,13 @@ public class ClientReceiver implements Runnable {
 	}
 	
 	/**
-	 * Wrapper for sending message that need to be encrypted
+	 * Wrapper for sending a message that needs to be encrypted
 	 * @param message
 	 * @throws Exception 
 	 */
 	public void send(Message message) throws Exception {
 		Message cipherMessage = new Message( DesCrypt.encrypt( message.getText(), client.getAliceDesKey()) );
-		LOGGER.log(Level.INFO, "Bob has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
+		LOGGER.log(Level.INFO, "Alice has encrypted DES ECB ciphertext: " + ByteFunc.bytesToHexString( cipherMessage.getText() ));
 		
 		LOGGER.log(Level.INFO, "Sending ciphertext ...");
 		SocketUtil.send(cipherMessage, client.getOutSecure() );
